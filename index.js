@@ -1,41 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import './index.css';
+import {Component} from 'react'
+import './index.css'; // Import the CSS file with animation styles
+let interval=null
 
-const AnimatedParagraph = (props) => {
-  const { text } = props;
-  const [displayText, setDisplayText] = useState([]);
-  const [isAnimating, setIsAnimating] = useState(true);
+const DisplayItem=(props)=>{
+  const {itemDetails}=props
+  const {id,imageUrl}=itemDetails
+  return <img src={imageUrl} alt={id} className='slide'/>
+}
 
-  useEffect(() => {
-    if (isAnimating) {
-      let currentIndex = 0;
-      const interval = setInterval(() => {
-        if (currentIndex < text.length) {
-          setDisplayText((prevText) => [
-            ...prevText,
-            { letter: text[currentIndex-1], id: currentIndex }
-          ]);
-          currentIndex++;
-        } else {
-          setIsAnimating(false);
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsAnimating(true);
-            setDisplayText([]);
-          }, 1000); // Time before restarting the animation (milliseconds)
-        }
-      }, 100); // Speed of animation (milliseconds)
+class MoveBar extends Component{
+   state={
+    currentStatus:true
+   }
 
-      return () => clearInterval(interval);
+   componentDidMount(){
+    this.activateInterval()
+   }  
+
+   componentWillUnmount(){
+    clearInterval(interval)
+   }
+
+   activateInterval=()=>{
+   interval = setInterval(() => {
+      this.setState(prevState=>({currentStatus:!prevState.currentStatus})); 
+    }, 1000);
+   }
+   
+  render(){
+    const {currentStatus}=this.state
+    console.log(currentStatus)
+    const {classValue,list}=this.props
+    return (
+    <div className={`${classValue} ${currentStatus ? 'paused' : ''}`}>
+    <div className="marquee-content">
+      {list.map(item=><DisplayItem key={item.id} itemDetails={item}/>)}
+    </div>
+  </div>
+  )
     }
-  }, [text, isAnimating]);
-
-  return (
-    <p className={`animated-paragraph ${isAnimating ? 'typing' : 'exit'}`}>
-      {displayText.map((letterObj) => (
-        <span key={letterObj.id}>{letterObj.letter}</span>
-      ))}
-    </p>
-  );
 };
-export default AnimatedParagraph;
+
+export default MoveBar;
