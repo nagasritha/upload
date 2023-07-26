@@ -1,17 +1,41 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { useState, useEffect } from 'react';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+const AnimatedParagraph = (props) => {
+  const { text } = props;
+  const [displayText, setDisplayText] = useState([]);
+  const [isAnimating, setIsAnimating] = useState(true);
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+  useEffect(() => {
+    if (isAnimating) {
+      let currentIndex = 0;
+      const interval = setInterval(() => {
+        if (currentIndex < text.length) {
+          setDisplayText((prevText) => [
+            ...prevText,
+            { letter: text[currentIndex-1], id: currentIndex }
+          ]);
+          currentIndex++;
+        } else {
+          setIsAnimating(false);
+          clearInterval(interval);
+          setTimeout(() => {
+            setIsAnimating(true);
+            setDisplayText([]);
+          }, 1000); // Time before restarting the animation (milliseconds)
+        }
+      }, 100); // Speed of animation (milliseconds)
+
+      return () => clearInterval(interval);
+    }
+  }, [text, isAnimating]);
+
+  return (
+    <p className={`animated-paragraph ${isAnimating ? 'typing' : 'exit'}`}>
+      {displayText.map((letterObj) => (
+        <span key={letterObj.id}>{letterObj.letter}</span>
+      ))}
+    </p>
+  );
+};
+export default AnimatedParagraph;
